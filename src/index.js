@@ -38,6 +38,14 @@ app.put("/movies", async (req, res) => {
 })
 
 // ??????? PATCH
+app.patch("/movies", async (req, res) => {
+  const { id } = req.query
+  const db = await getDatabaseInstance()
+  const sets = Object.keys(req.body).map(col => `${col}=?`).join(", ")
+  const values = [...Object.values(req.body), id]
+  const result = await db.run(`UPDATE movies SET ${sets} WHERE id=?`, values)
+  res.json(result)
+})
 
 app.delete("/movies", async (req, res) => {
   const { id } = req.query
