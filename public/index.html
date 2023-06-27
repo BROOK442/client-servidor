@@ -4,10 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Teste</title>
+  <link rel="stylesheet" href="main.css">
 </head>
 
 <body>
-  <form>
+  <form class="form-alterar">
     <div>
       <label for="title">title</label>
       <input name="title" id="title">
@@ -35,27 +36,33 @@
 
   <script>
     const domMovieList = document.querySelector("ul.movie-list")
-    
+    const domFormAlterar = document.querySelector("form.form-alterar")
+
+    // ---✀------------------------------------------------------------------
+
     async function listarTodosOsFilmes() {
       const response = await fetch("/movies")
       const movies = await response.json()
+      domMovieList.innerHTML = ""
       movies.forEach(movie => {
         domMovieList.innerHTML += `  
           <li>
-            <strong>title</strong>
-            ${movie.title}
+            <div>
+              <strong>title:</strong> <input value="${movie.title}">
+            </div>
             <ul>
               <li>
-                <strong>source</strong>
-                ${movie.source}
+                <strong>source:</strong> <input value="{${movie.source}">
               </li>
               <li>
-                <strong>thumb</strong>
-                ${movie.thumb}
+                <strong>thumb:</strong> <input value="${movie.thumb}">
               </li>
               <li>
-                <strong>description</strong>
-                ${movie.description}
+                <strong>description:</strong> <input value="${movie.description}">
+              </li>
+              <li>
+                <button class="excluir" data-id="${movie.id}">excluir</button>
+                <button class="alter" data-id="${movie.id}">alterar</button>
               </li>
             </ul>
           </li>
@@ -64,6 +71,60 @@
     }
 
     listarTodosOsFilmes()
+
+    // ---✀------------------------------------------------------------------
+
+    domFormAlterar.addEventListener("submit", async ev => {
+      ev.preventDefault()
+      ev.stopPropagation()
+      ev.stopImmediatePropagation()
+
+      const body = JSON.stringify({
+        title: domFormAlterar.title.value,
+        source: domFormAlterar.source.value,
+        description: domFormAlterar.description.value,
+        thumb: domFormAlterar.thumb.value,
+      })
+
+      const response = await fetch("/movies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body
+      })
+      
+      const result = await response.json()
+      domFormAlterar.reset()
+
+      listarTodosOsFilmes()
+    })
+    
+    // ---✀------------------------------------------------------------------
+
+    domMovieList.addEventListener("click", async ev => {
+      if(ev.target.classList.contains("excluir")) {
+        const response = await fetch(`/movies?id=${ev.target.dataset.id}`, { method: "DELETE" })
+        const movies = await response.json()
+        listarTodosOsFilmes()
+        return
+      }
+
+      if(ev.target.classList.contains("alter")) {
+        const response = await fetch(`/movies?id=${ev.target.dataset.id}`, { 
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: "ZZZZZZZZZZZZZZZZZ",
+            source: "ZZZZZZZZZZZZZZZZZ",
+            description: "ZZZZZZZZZZZZZZZZZ",
+            thumb: "ZZZZZZZZZZZZZZZZZ",
+          })
+        })
+        const movies = await response.json()
+        listarTodosOsFilmes()
+        return
+      }
+    })
+
   </script>
 </body>
 
